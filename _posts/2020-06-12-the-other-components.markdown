@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "Starting the GBA"
+title:  "Getting stuff on screen"
 date:   2020-06-12 17:21:00 +0200
 categories: GameBoy Advance, emulation
 ---
 
 Then I started working on my next project, a GameBoy Advance (GBA) emulator! This promised to be even more of a challenge. There was less documentation (not an entire Wiki full of it!) and a lot more to it.
 
-First things first: the CPU implementation. There were 2 main sources I used for this: the [ARM7TDMI Data Sheet]({{site.baseurl}}/Docs/ARM7TDMI.pdf) and [GBATek](https://problemkaputt.de/gbatek.htm). The data sheet proved very useful in the beginning: it explained most instructions in detail, even provided instruction timings (something for later), and was in general very clear. GBATek was also very useful, but I found this to be more useful for describing edge cases (what happens when you use R15 in a STM/LDM instruction etc.).
+First things first: the CPU implementation. There were 2 main sources I used for this: the [ARM7TDMI Data Sheet](../Docs/ARM7TDMI.pdf) and [GBATek](https://problemkaputt.de/gbatek.htm). The data sheet proved very useful in the beginning: it explained most instructions in detail, even provided instruction timings (something for later), and was in general very clear. GBATek was also very useful, but I found this to be more useful for describing edge cases (what happens when you use R15 in a STM/LDM instruction etc.).
 
 The manual started off describing interrupts, which in my opinion is quite strange. I got a bit scared, because interrupts were something I never got quite right in the NES. After this though, it started with the actual structure of the CPU.
 

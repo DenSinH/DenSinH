@@ -21,14 +21,14 @@ I figured out how to get stuff on the screen (in Python I would just use PyGame,
 
 Fortunately there was the [NesDev Wiki](http://wiki.nesdev.com/w/index.php/Nesdev_Wiki). Along with some help from others (thank you Dillon!), I got some stuff working, and I got the first thing on the screen (of course, nestest!)
 
-<img src="../Images/NES/nestest_faillure.png">
+<img src="{{site.baseurl}}/Images/NES/nestest_faillure.png">
 
 Of course, stuff wasn't correct right away, the colors were all off, and the selector was in the middle of the text (`~~ Run all**ests`). After more testing, coding and finding stupid mistakes, I got the actual thing running:
 
-<img src="../Images/NES/nestest.png">
+<img src="{{site.baseurl}}/Images/NES/nestest.png">
 
 Of course, my MOS6502 implementation ran though the log just fine, so the results of the tests weren't surprising. Now all that was left was completing the PPU implementation, adding every other feature there was, and even audio! After adding in some of the more specific behavior of the NES, I was able to run even some of the more [Tricky-to-emulate games](https://wiki.nesdev.com/w/index.php/Tricky-to-emulate_games)!
 
-<img src="../Images/NES/smbworking.png">
+<img src="{{site.baseurl}}/Images/NES/smbworking.png">
 
 After I got this running, all that was left was adding in more mappers. My NES emulator seemed to be getting to its final stages. Of course, it is nowhere near perfect, but I didn't really want to add in perfect cycle accuracy or anything. I had learnt a lot, and loved this project!
