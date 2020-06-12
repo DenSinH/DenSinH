@@ -20,7 +20,16 @@ First of all, some stuff that is something that isn't ARM7TDMI specific: all CPU
 | C(arry)      | The last operation produced carry (E.g. `0xffff_ffff + 0x1`) |
 | (o)V(erflow) | The last operation produced overflow, meaning that the sign of the result is not the sign you would expect (E.g. `0x7fff_ffff + 0x1`, where both operands are positive, but the result is negative)
 
-The ARM7TDMI can operate in 2 different states: ARM and THUMB. In the ARM state, the CPU uses 32 bit instructions, and in the THUMB state it uses 16 bit instructions. In the ARM state, every instruction has a condition code in the first 4 bits. The condition code uses the 4 bits described above to determine whether the instruction gets executed or not. An example is `Z is set`, or `Z is clear AND (N equals V)` (I actually messed this last one up, causing me some problems...). In THUMB mode (almost) every instruction gets executed unconditionally.
+The ARM7TDMI can operate in 2 different states: ARM and THUMB. In the ARM state, the CPU uses 32 bit instructions, and in the THUMB state it uses 16 bit instructions. States can be switched between using a BX (branch and exchange) instruction. In the ARM state, every instruction has a condition code in the first 4 bits. The condition code uses the 4 bits described above to determine whether the instruction gets executed or not. An example is `Z is set`, or `Z is clear AND (N equals V)` (I actually messed this last one up, causing me some problems...). In THUMB mode (almost) every instruction gets executed unconditionally.
+
+The instructions get read before they are executed, using a 3-stage pipeline. In the actual GBA, three things happen at the same time, every instruction:
+ - an instruction is "prefetched" (it is read from memory, put into the pipeline, and the PC is incremeted by either 2 (THUMB) or 4 (ARM) bytes)
+ - an instruction is decoded (this happens to the one that was prefetched the instruction before the one we are executing)
+ - an instruction is executed
+
+when emulating the pipeline, we don't "decode" the instruction in the meanwhile, we just do that when the instruction is actually happening. We do however prefetch instructions, and keep them in some sort of pipeline. First I just used a `Queue<uint>` for this, but since I only need to store at most 2 instructions in it at a time, I implemented my own class for the pipeline, basically equivalent to the `Queue<uint>`, but I can always add functionality to it this way, and it turned out to be faster!
+
+The pipeline can also be "flushed". This happens whenever the value of PC is changed by an instruction (whether that be a branch, or a store to it with some form of data processing (basic arithmetic operations)). When the pipeline is flushed, it simply means that all instructions contained in it are removed, so basically `Pipeline.Clear()` if I were to use a `Queue<uint>`.
 
 There are some other important bits in the CPSR: the bottom 8. Bit 7 is the `I` bit, or the IRQ disable bit. Setting this bit makes it so no interrupts can be thrown. The `F` bit is the FIQ disable bit. However, since the GBA uses an adapted variant of the ARM7TDMI, this bit is not important, as FIQs cannot be thrown normally. We will just ignore this bit. Then there is the `T` bit, or the state bit. This bit signifies if we are in THUMB (1) or ARM (0) state.
 
@@ -49,9 +58,45 @@ and something similar for `set`.
 
 The ARM7TDMI has 16 general use 32 bit registers. They are called general use, but register 15 (R15) is the PC, so storing values in this for arithmetic will not work, and R14 is usually used as link register (LR), storing a value to return to after we execute a function of some sort. R13 is used as the stack pointer (SP). Some of these can be banked (so swapped out for other ones) depending on what mode we are in. When we are in User/System mode, we use the "normal" registers. The only modes that are relevant for the GBA only bank registers 13 and 14.
 
+In ARM mode, we can see all 16 non-banked registers, and in THUMB mode we can generally only see the lowest 8. However, in some THUMB instructions, the LR or the SP can be used, and in the "Hi register operations" instruction, values can be read or written to registers R8-R15.
+
 There are 5 more registers, one for each mode other than User/System (so only 2 are relevant): the SPSR. This stands for Special Program Status Register. Whenever a mode change happens, the value of the CPSR is copied into this register, so that when we return from, say, an interrupt, we can just resume as normal.
 
 After all of this was implemented, it was time to start working on the instructions. All of these are explained very well in GBATek and the manual, so I will not describe those in detail. Something that is good to know, is that the Undefined instruction, and every Coprocessor related instruction does NOT apply to the GBA. The GBA does not use these instructions, and Undefined mode is invalid, so the Undefined instruction would not make much sense.
+
+Decoding these instructions I did in a way different (and better) way than the NES. What I did was make a lookup table (LUT) of all the instructions. What type of instruction you use is determined only by a subset of the bits in the instruction, the rest are simply parameters. For ARM instructions, the mode is determined by 12 bits: bits 27-20 and bits 7-4. For THUMB you only need the top 6 bits. What I did was create a `delegate` type for my instructions, which for ARM was
+
+{% highlight csharp %}
+private delegate int ARMInstruction(uint Instruction);
+private ARMInstruction[] ARMInstructions = new ARMInstruction[0x1000];  // 12 bits determine the instruction
+{% endhighlight %}
+
+and then before the CPU started running, I initialized this table to the correct instructions:
+
+{% highlight csharp %}
+private void InitARM()
+{
+    for (uint Instruction = 0; Instruction < 0x1000; Instruction++)
+    {
+        // Bits 27-20 and 7-4 of an instruction
+        switch ((Instruction & 0xc00) >> 10)
+        {
+            case 0b00:
+                // Data Processing / Multiply / Multiply Long / Single Data Swap / Branch & Exchange / Halfword Data Transfer
+                if ((Instruction & 0xfcf) == 0x009)
+                {
+                    // Multiply
+                    this.ARMInstructions[Instruction] = this.Multiply;
+                }
+                else if ((Instruction & 0xf8f) == 0x089)
+                {
+                    // Multiply Long
+                    this.ARMInstructions[Instruction] = this.MultiplyLong;
+                }
+                else if ((Instruction & 0xfbf) == 0x109)
+                ...
+{% endhighlight %}
+This allows for quick access to the type of instruction we want to execute.
 
 When testing your emulator in the beginning, it might be nice to compare it to existing emulators (such as [mGBA](https://mgba.io/), or [No$GBA](https://www.nogba.com/)). Both of these have a way to produce logs, so you could implement something like it for your own, and compare it to the logs produced by these 2 (pretty accurate) emulators.
 

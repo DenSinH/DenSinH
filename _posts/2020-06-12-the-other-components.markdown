@@ -1,58 +1,106 @@
 ---
 layout: post
-title:  "Getting stuff on screen"
+title:  "The other components"
 date:   2020-06-12 17:21:00 +0200
 categories: GameBoy Advance, emulation
 ---
 
-Then I started working on my next project, a GameBoy Advance (GBA) emulator! This promised to be even more of a challenge. There was less documentation (not an entire Wiki full of it!) and a lot more to it.
+## Memory
+Okay, so now we have our ARM7TDMI being emulated, it is time to get the other components running. First of all, something we actually need to run the ARM7TDMI as well: the memory. The GBA has 9 sections of memory, some mirrored, some are not. These sections are (adapted from GBATek):
 
-First things first: the CPU implementation. There were 2 main sources I used for this: the [ARM7TDMI Data Sheet](../Docs/ARM7TDMI.pdf) and [GBATek](https://problemkaputt.de/gbatek.htm). The data sheet proved very useful in the beginning: it explained most instructions in detail, even provided instruction timings (something for later), and was in general very clear. GBATek was also very useful, but I found this to be more useful for describing edge cases (what happens when you use R15 in a STM/LDM instruction etc.).
+|General Internal Memory| Section   | Remark  |
+| ----------------------|---|---|
+  `00000000-00003FFF`   |BIOS - System ROM|         (16 KBytes), read only
+  `00004000-01FFFFFF`   |Not used|
+  `02000000-0203FFFF`   |WRAM - On-board Work RAM|  (256 KBytes) 2 Wait
+  `02040000-02FFFFFF`   |Not used|  eWRAM mirrors
+  `03000000-03007FFF`   |WRAM - On-chip Work RAM|   (32 KBytes)
+  `03008000-03FFFFFF`   |Not used| iWRAM mirrors
+  `04000000-040003FE`   |I/O Registers|
+  `04000400-04FFFFFF`   |Not used|
+|Internal Display Memory| | |
+  `05000000-050003FF`   |BG/OBJ Palette RAM|        (1 Kbyte)
+  `05000400-05FFFFFF`   |Not used| PAL mirrors
+  `06000000-06017FFF`   |VRAM - Video RAM|          (96 KBytes)
+  `06018000-06FFFFFF`   |Not used| VRAM mirrors
+  `07000000-070003FF`   |OAM - OBJ Attributes|      (1 Kbyte)
+  `07000400-07FFFFFF`   |Not used| OAM mirrors
+|External Memory (Game Pak)||
+  `08000000-09FFFFFF`   |Game Pak ROM/FlashROM (max 32MB)| Wait State 0, read only
+  `0A000000-0BFFFFFF`   |Game Pak ROM/FlashROM (max 32MB)| Wait State 1, read only
+  `0C000000-0DFFFFFF`   |Game Pak ROM/FlashROM (max 32MB)| Wait State 2, read only
+  `0E000000-0E00FFFF`   |Game Pak SRAM    (max 64 KBytes)| 8bit Bus width
+  `0E010000-0FFFFFFF`   |Not used | SRAM mirrors
+|Unused Memory Area|||
+  `10000000-FFFFFFFF`  | Not used |upper 4bits of address bus unused|
 
-The manual started off describing interrupts, which in my opinion is quite strange. I got a bit scared, because interrupts were something I never got quite right in the NES. After this though, it started with the actual structure of the CPU.
+GBATek describes some sections as "not used". A part of these sections contain mirrors for the section above it. For example, accessing `0x0204_0000` would be the same as accessing `0x0200_0000`. Some of these sections are actually not used, like the section after the BIOS. Reading from such sections yields usually unwanted (for ROM makers), but not unpredictable behavior. This is something that is hard to emulate, and is not _properly_ implemented in many of the currently available emulators.
 
-First of all, some stuff that is something that isn't ARM7TDMI specific: all CPUs (that I know of) have some form of storing some information about the previous arithmetic operation that happened. In the GBA, this register is called the Current Program Status Register (CPSR). In this register, not all bits are used in the ARM7TDMI (some of them might be used in later processors with the same architecture, the ARM7TDMI uses the ARMv4t, little endian architecture). The top 4 bits are very important. They serve as the bits that store the information on the last arithmetic operation:
+When I started out making the memory, I simply made 9 `byte[]`s of the appropriate sizes, and 6 access functions (get/set) (word/half word/byte). A word is a 32 bit value, a half word is a 16 bit value, and a byte is, well, a byte. For starters, this was good enough. Some sections are mirrored a bit differently than others, but other than that is was fine.
 
-| Flag | Meaning |
-|------|---------|
-| N(egatve)    | Result of last operation was negative (bit 31 was set) |
-| Z(ero)       | Result of last operation was zero (all bits 0) |
-| C(arry)      | The last operation produced carry (E.g. `0xffff_ffff + 0x1`) |
-| (o)V(erflow) | The last operation produced overflow, meaning that the sign of the result is not the sign you would expect (E.g. `0x7fff_ffff + 0x1`, where both operands are positive, but the result is negative)
+## Picture Processing Unit
+The other vital component of the GBA is the Picture Processing Unit (PPU). It handles everything related to getting pixels on the screen. A source that is really useful for developing this part of the GBA is [Tonc](https://www.coranac.com/tonc/text/). Tonc is a site made for GBA development, but it describes the way it renders things on the screen extremely well.
 
-The ARM7TDMI can operate in 2 different states: ARM and THUMB. In the ARM state, the CPU uses 32 bit instructions, and in the THUMB state it uses 16 bit instructions. In the ARM state, every instruction has a condition code in the first 4 bits. The condition code uses the 4 bits described above to determine whether the instruction gets executed or not. An example is `Z is set`, or `Z is clear AND (N equals V)` (I actually messed this last one up, causing me some problems...). In THUMB mode (almost) every instruction gets executed unconditionally.
+The first thing to do is implementing one of the 6 rendering modes. 3 Of these are bitmap modes, and are relatively easy to implement. Mode 5 is barely documented anywhere, and is not used in games as far as I know. The modes to focus on at this point are modes 3 and 4.
 
-There are some other important bits in the CPSR: the bottom 8. Bit 7 is the `I` bit, or the IRQ disable bit. Setting this bit makes it so no interrupts can be thrown. The `F` bit is the FIQ disable bit. However, since the GBA uses an adapted variant of the ARM7TDMI, this bit is not important, as FIQs cannot be thrown normally. We will just ignore this bit. Then there is the `T` bit, or the state bit. This bit signifies if we are in THUMB (1) or ARM (0) state.
+The GBA has a few layers that can be outputted to, background layers and a sprite layer. There are 4 layers to the background, each can have a priority value of 0-3 (0 is the highest). When considering bitmap modes, only background 2 (BG2) is used. For now we also do not need to worry about objects, for the ROMs we will be running at the beginning will just use these bitmap modes, and no objects whatsoever.
 
-The bottom 5 bits are called the "mode bits". They represent what operating mode we are in. There exist 7 valid modes for the ARM7TDMI, however only 4 are relevant: User/System (so 2 modes) are really just the normal modes of operation. IRQ mode signifies that we are handling an IRQ, we enter this mode when an interrupt is acknowledged. Supervisor mode is entered when we do an SWI. An SWI jumps the program counter (PC) into the BIOS, and executes a function there (such as `SQRT`, or `ARCTAN`, but also something like waiting for a certain interrupt to happen). Any other combination of mode bits is invalid, and will never occur (if you emulate it correctly).
-
-I implemented my CPSR much in the same way I did for my NES:
+In bitmap modes, palette entry used per pixel are written to VRAM. You would simply read a halfword from VRAM and get a halfword from PAL based on that address. To get started, the code for mode 4 would look something like this:
 
 {% highlight csharp %}
-private uint CPSR
-        {
-            get => (SR_RESERVED << 8) | (uint)(
-                    (N << 31) |
-                    (Z << 30) |
-                    (C << 29) |
-                    (V << 28) |
-                    (I << 7) |
-                    (F << 6) |
-                    ((int)(this.state) << 5) |
-                    (byte)this.mode
-                    );
-            set
-            {
-              ...
+ushort offset = (ushort)(this.gba.mem.IORAM.DISPCNT.IsSet(DISPCNTFlags.DPFrameSelect) ? 0xa000 : 0);
+
+if (this.gba.mem.IORAM.DISPCNT.DisplayBG(2))
+{
+    for (int x = 0; x < width; x++)
+    {
+        this.Display[width * scanline + x] = this.GetPaletteEntry((uint)this.gba.mem.VRAM[offset + width * scanline + x] << 1);
+    }
+}
+else
+{
+    for (int x = 0; x < width; x++)
+    {
+        this.Display[width * scanline + x] = 0;
+    }
+}
 {% endhighlight %}
-and something similar for `set`.
 
-The ARM7TDMI has 16 general use 32 bit registers. They are called general use, but register 15 (R15) is the PC, so storing values in this for arithmetic will not work, and R14 is usually used as link register (LR), storing a value to return to after we execute a function of some sort. R13 is used as the stack pointer (SP). Some of these can be banked (so swapped out for other ones) depending on what mode we are in. When we are in User/System mode, we use the "normal" registers. The only modes that are relevant for the GBA only bank registers 13 and 14.
+Of course, this is not all that there is to it, but it's good enough for now. For every pixel on the screen, you read a value from VRAM and get a corresponding palette entry to put on the display.
 
-There are 5 more registers, one for each mode other than User/System (so only 2 are relevant): the SPSR. This stands for Special Program Status Register. Whenever a mode change happens, the value of the CPSR is copied into this register, so that when we return from, say, an interrupt, we can just resume as normal.
+There are still some things in here that I didn't describe, and they are the IO registers. One section of memory is very special: the IORAM. Instead of normal bytes, it holds registers. Each register corresponds to something different. The ones that are most important as of now are DISPSTAT and DISPCNT. They control the DISPlay.
 
-After all of this was implemented, it was time to start working on the instructions. All of these are explained very well in GBATek and the manual, so I will not describe those in detail. Something that is good to know, is that the Undefined instruction, and every Coprocessor related instruction does NOT apply to the GBA. The GBA does not use these instructions, and Undefined mode is invalid, so the Undefined instruction would not make much sense.
+## IO Registers
+Because every IO register does something different, I had to come up with a way to implement them. What I decided to do was make an `IORegister` interface, and make a separate class for every IO register, so that each may have it's own functionality, but we can always call a write and a read function. The interface looked like this:
 
-When testing your emulator in the beginning, it might be nice to compare it to existing emulators (such as [mGBA](https://mgba.io/), or [No$GBA](https://www.nogba.com/)). Both of these have a way to produce logs, so you could implement something like it for your own, and compare it to the logs produced by these 2 (pretty accurate) emulators.
+{% highlight csharp %}
+public interface IORegister
+{
+    ushort Get();
+    void Set(ushort value, bool setlow, bool sethigh);
+}
+{% endhighlight %}
 
-Some good roms to start testing with are [armwrestler](https://github.com/destoer/armwrestler-gba-fixed), to test the very basics of your CPU. (The one I linked to here is NOT the original upload, but an adapted one that fixed some of the tests, and removed the "ARMv5t" test, which could confuse a lot of people, as it tests things that are not possible on the GBA). Once that is going, it could be nice to use [GBASuite](https://github.com/jsmolka/gba-suite). These ROMs test more edge-case scenario's, but the ROMs won't crash (in general) if you pass armwrestler.
+All registers (except 2) are either 16 or 32 bit. What I decided to do was make an array of 16 bit registers, and make another wrapper for 32 bit (4 byte) registers. In the end, almost every register inherits from an `abstract` class `IORegister2`, which implements the most basic version of reading and writing:
+
+{% highlight csharp %}
+public abstract class IORegister2 : IORegister
+{
+    protected ushort \_raw;
+
+    public virtual ushort Get()
+    {
+        return this.\_raw;
+    }
+
+    public virtual void Set(ushort value, bool setlow, bool sethigh)
+    {
+        if (setlow)
+            this.\_raw = (ushort)((this.\_raw & 0xff00) | (value & 0x00ff));
+        if (sethigh)
+            this.\_raw = (ushort)((this.\_raw & 0x00ff) | (value & 0xff00));
+    }
+}
+{% endhighlight %}
+
+the `setlow` and `sethigh` bools must be used because it is possible that only half of the register gets written to. I also added a `ZeroRegister` class, which does nothing when you write to it, and returns 0 on reads. A `UnusedRegister` class, a 32 bit register that returns "open bus" when read, and does nothing on writes. And finally, a `DefaultRegister` class. This one is just for while I am developing my emulator. I do not have all registers implemented yet, so they are basically placeholders. They are essentially the same as the `IORegister2` class, except not abstract.
