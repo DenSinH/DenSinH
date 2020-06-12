@@ -86,19 +86,19 @@ All registers (except 2) are either 16 or 32 bit. What I decided to do was make 
 {% highlight csharp %}
 public abstract class IORegister2 : IORegister
 {
-    protected ushort \_raw;
+    protected ushort _raw;
 
     public virtual ushort Get()
     {
-        return this.\_raw;
+        return this._raw;
     }
 
     public virtual void Set(ushort value, bool setlow, bool sethigh)
     {
         if (setlow)
-            this.\_raw = (ushort)((this.\_raw & 0xff00) | (value & 0x00ff));
+            this._raw = (ushort)((this._raw & 0xff00) | (value & 0x00ff));
         if (sethigh)
-            this.\_raw = (ushort)((this.\_raw & 0x00ff) | (value & 0xff00));
+            this._raw = (ushort)((this._raw & 0x00ff) | (value & 0xff00));
     }
 }
 {% endhighlight %}
