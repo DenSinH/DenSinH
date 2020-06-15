@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "The other components"
+title:  "[BLOG] The other components"
 date:   2020-06-12 17:21:00 +0200
 categories: GameBoy Advance, emulation
 ---

@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Introduction to Emulation"
+title:  "[BLOG] Introduction to Emulation"
 date:   2020-06-12 12:34:51 +0200
 categories: introduction, emulation
 ---

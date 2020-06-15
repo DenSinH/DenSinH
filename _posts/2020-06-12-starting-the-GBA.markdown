@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Starting the GBA"
+title:  "[BLOG] Starting the GBA"
 date:   2020-06-12 17:21:00 +0200
 categories: GameBoy Advance, emulation
 ---

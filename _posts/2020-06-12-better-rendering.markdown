@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Better Rendering"
+title:  "[BLOG] Better Rendering"
 date:   2020-06-12 21:21:00 +0200
 categories: GameBoy Advance, emulation
 ---

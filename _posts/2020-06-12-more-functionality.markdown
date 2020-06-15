@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "More functionality"
+title:  "[BLOG] More functionality"
 date:   2020-06-12 20:21:00 +0200
 categories: GameBoy Advance, emulation
 ---
