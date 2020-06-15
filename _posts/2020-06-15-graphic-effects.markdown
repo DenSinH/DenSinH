@@ -10,7 +10,7 @@ The GBA has many graphic capabilities. For game _and_ emulator development, [Ton
 
 One of the simplest graphic effects is the mosaic effect. What this effect does is"makes your sprites blocky". The effect is not used very often as far as I know, and some emulators such as No$GBA and mGBA do not implement the mosaic effects properly as of now. `mos_demo` from Tonc can be seen below:
 
-<img src="{{site.baseurl}}/Images/GBA/GFX/mosaic.png">
+<img src="{{site.baseurl}}/Images/GBA/GFX/mosaic.PNG">
 
 Basically, the `MOSAIC` IO register holds value for the amount backgrounds and objects stretch in the X and Y direction. A pixel at the point `(x, y)` would get the same color as the pixel at the point `(x - (x % MosaicHStretch), y - (y % MosaicVStretch))`. Basically, you snap it to a grid spaced by `MosaicHStretch` in the X direction, and `MosaicVStretch` in the Y direction.
 
@@ -26,7 +26,7 @@ If at least one of the windows is turned on though, the screen gets "masked" by 
 
 These values in `WINxH` and `WINxV` do wrap around. An example is seen below (screenshot of `win_demo` from Tonc):
 
-<img src="{{site.baseurl}}/Images/GBA/GFX/windowing.png">
+<img src="{{site.baseurl}}/Images/GBA/GFX/windowing.PNG">
 
 The way this demo works is as follows: both windows 0 and 1 are enabled. Window 1 (lowest priority) is a big static layer, and window 1 is a smaller layer that you can move around. The behind-most layer is enabled in WINOUT, it will be displayed everywhere. This is the layer with the checkered pattern. The layer on top of this is only enabled in WININ for window 1, but not in WININ for window 0. The way the layers are overlayed can be seen in this very clear picture from Tonc:
 
@@ -75,5 +75,3 @@ private void MaskWindow<T>(ref T[] Window, T WindowInEnable, byte X1, byte X2, b
 After this, whenever I would try to render a pixel into one of my layers' scanline arrays, I would only allow it to render a pixel if `Window[x]` was `true` for that layer.
 
 ## Alpha Blending
-
- 
