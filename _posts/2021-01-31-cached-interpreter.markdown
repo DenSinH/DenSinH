@@ -363,4 +363,49 @@ ARM7TDMI::Run() {
 	}
 }
 ```
-That is essentially it for making and running caches. Then for 
+That is essentially it for making and running caches. There is one last, important thing we need to account for though: writes to iWRAM. 
+When a write to iWRAM happens, it's possible that it's overwriting code that was there before. When we jump to an address, we don't want to be running code
+from our caches that is not there anymore! So, when a write to iWRAM happens, we have to clear a section of our caches in iWRAM. We could do this naively, and loop over
+all 128 entries in the block of the write, check if there is a cache and destroy it. This means a lot of checking! Something else we can do, is whenever we make a cache block,
+store the index of that cache block to a cache block page table. Then when a write happens to iWRAM, we just have to look up what page this is in (only a shift and a mask), and then destroy
+the blocks at the indices that are in the page table. This is what the 
+```CXX
+iWRAMCacheFilled[(address & (Mem::iWRAMSize - 1)) / Mem::InstructionCacheBlockSizeBytes].push_back(index);
+```
+line meant in an earlier code block. Writing to iWRAM then has the following callback:
+```CXX
+void ARM7TDMI::iWRAMWrite(u32 address) {
+    // clear all instruction caches in a CacheBlockSizeBytes sized region
+    const u32 cache_page_index = (address & 0x7fff) / Mem::InstructionCacheBlockSizeBytes;
+
+    for (u32 index : iWRAMCacheFilled[cache_page_index]) {
+        iWRAMCache[index] = nullptr;
+    }
+    iWRAMCacheFilled[cache_page_index].clear();
+
+    if ((corrected_pc & ~(Mem::InstructionCacheBlockSizeBytes - 1)) == (address & ~(Mem::InstructionCacheBlockSizeBytes - 1))) {
+        // current block destroyed
+        if (CurrentCache) {
+            *CurrentCache = nullptr;
+            CurrentCache = nullptr;
+        }
+    }
+}
+```
+As you can see, we look up the cache page (the integer division will be optimized out to a single shift, since `Mem::InstructionCacheBlockSizeBytes` is 256 (256 bytes per cache block). 
+We then look up in this table which indices are filled in that page. This will usually be at most 1 or 2 blocks, but will probably be 0 blocks in most cases. That's a lot fewer loops than 128!
+
+Then we also need to check if the current block is overwritten. You might recall that we check this in the new run methods. If the address is in the same page as `pc`, we destroy the current block,
+and show that there is no longer a block there by setting `CurrentCache = nullptr`.
+
+#### The pros and the cons
+
+I've tried it out on a few games, and got between 10-20% performance increase in most games, but some ROMs that run a lot of code from ROM (like AGS) I gained about 50% more frames per second.
+I said this before, but I also tried rewriting it to not dynamically allocate blocks with `unique_ptr`, but besides being a lot more annoying in having to deal with a bump allocator, it also didn't gain
+me any more speed over dynamic allocation. And on top of that, this way with dynamic allocation uses a minimal amount of memory. 
+
+The reason that this dynamic allocation probably doesn't matter performance wise is because a lot of blocks don't have to be recreated. In the very large ROM region, blocks will always be the same,
+and only have to be allocated once. Only in the iWRAM region will blocks have to be recreated and allocated. The big read only code region is a major reason why this might not be the case for other systems.
+In a lot of systems, the entire memory range is writeable, and you would spend a lot more time allocating and deallocating memory for the blocks. 
+
+All in all, it was not only a quest for more performance, but also a fun learning experience for trying out the idea I had for the cached interpreter. Thank you for reading!
