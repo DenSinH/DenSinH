@@ -145,24 +145,19 @@ CurrentCache == nullptr: no cache present, no cache can be made
 CurrentCache == nullptr*: no cache present, cache can be made
 otherwise: cache present!
 ```
-We also need a way to update the current cache:
+We also need a way to update the current cache (simplified to remove some range checks etc.):
 ```CXX
  constexpr std::unique_ptr<InstructionCache>* ARM7TDMI::GetCache(const u32 address) {
 	switch (static_cast<MemoryRegion>(address >> 24)) {
 		case MemoryRegion::BIOS: {
 			const u32 index = (address & (Mem::BIOSSize - 1)) >> 1;
-			if (likely(address < Mem::BIOSSize)) {
-				// check if cache exists
-				if (BIOSCache[index]) {
-					return &BIOSCache[index];
-				}
-
-				// show that no cache exists, but can be created
+			// check if cache exists
+			if (BIOSCache[index]) {
 				return &BIOSCache[index];
 			}
 
-			// no cache
-			return nullptr;
+			// show that no cache exists, but can be created
+			return &BIOSCache[index];
 		}
 		case MemoryRegion::iWRAM: {
 			const u32 index = (address & (Mem::iWRAMSize - 1)) >> 1;
@@ -199,8 +194,6 @@ Running the cache is the simplest method:
 void ARM7TDMI::RunCache() {
     // run created cache
     const InstructionCache& cache = **CurrentCache;
-    const u8 cycles = cache.AccessTime;
-    const bool deletable = cache.Deletable;
 
     if (cache.ARM) {
         // ARM mode, we need to check the condition now too
@@ -211,45 +204,48 @@ void ARM7TDMI::RunCache() {
                 }
             }
 
-            *timer += cycles;  // add time we would otherwise spend fetching the opcode from memory
+            *timer += cache.AccessTime;  // add time we would otherwise spend fetching the opcode from memory
             if (CheckCondition(instr.Instruction >> 28)) {
                 (this->*instr.Pointer)(instr.Instruction);
             }
-
             pc += 4;
 
             // block was destroyed (very unlikely)
-            if (deletable && unlikely(!CurrentCache)) {
+            if (cache.Deletable && unlikely(!CurrentCache)) {
                 return;
             }
         }
     }
     else {
-        // THUMB mode, no need to check instructions
+        // THUMB mode, no need to check condition
 		/*
 		 * the code here is essentially the same as above
 		 */
     }
 }
 ```
-Making the block looks very similar to the old loop, but then with a twist. I changed up my basic `ARM7TDMI::Step()` to this (also slightly simplified to remove pipeline stuff):
+Making the block looks very similar to the old loop, but then with a twist. 
+I templated my basic `ARM7TDMI::Step()` to take a boolean `MakeCache`. If we are not making a cache, I made the step function return a boolean saying whether we are in a cacheable region or not. That
+means that `Step<false>` is the same as the above step function, except it returns 
+```CXX
+InCacheRegion(corrected_pc);  // corrected_pc = pc - (ARMMode ? 8 : 4)
+```
+If we are making a cache, we need to record the instructions we find. Then it looks a bit more complex:
 ```CXX
 template<bool MakeCache>
-bool ARM7TDMI::Step() {
+bool ARM7TDMI::Step<true>() {
     u32 instruction;
 
     bool block_end = false;
 	if (ARMMode) {
-        // before the instruction gets executed, we are 2 instructions ahead
         instruction = Memory->Read<u32, true>(pc - 8);
-		if constexpr(MakeCache) {
-            auto instr = CachedInstruction(instruction, ARMInstructions[ARMHash(instruction)]);
-            (*CurrentCache)->Instructions.push_back(instr);
-            // also check if Rd == pc (does not detect multiplies with pc as destination)
-            block_end = IsARMBranch[ARMHash(instruction)]
-                     || ((instruction & 0x0000f000) == 0x0000f000)   // any operation with PC as destination
-                     || ((instruction & 0x0e108000) == 0x08108000);  // ldm r, { .. pc }
-        }
+		auto instr = CachedInstruction(instruction, ARMInstructions[ARMHash(instruction)]);
+		(*CurrentCache)->Instructions.push_back(instr);
+		
+		// check if instruction is branch or an operation with Rd == pc (does not detect multiplies with pc as destination)
+		block_end = IsARMBranch[ARMHash(instruction)]
+				 || ((instruction & 0x0000f000) == 0x0000f000)   // any operation with PC as destination
+				 || ((instruction & 0x0e108000) == 0x08108000);  // ldm r, { .. pc }
         if (CheckCondition(instruction >> 28)) {
             (this->*ARMInstructions[ARMHash(instruction)])(instruction);
         }
@@ -259,29 +255,20 @@ bool ARM7TDMI::Step() {
     else {
         // THUMB mode
         instruction = Memory->Read<u16, true>(pc - 4);
-        // THUMB mode
-        if constexpr(MakeCache) {
-            auto instr = CachedInstruction(instruction, THUMBInstructions[THUMBHash((u16)instruction)]);
-            (*CurrentCache)->Instructions.push_back(instr);
-            // also check for hi-reg-ops with PC as destination
-            block_end = IsTHUMBBranch[THUMBHash((u16)instruction)] || ((instruction & 0xfc87) == 0x4487);
-        }
+		auto instr = CachedInstruction(instruction, THUMBInstructions[THUMBHash((u16)instruction)]);
+		(*CurrentCache)->Instructions.push_back(instr);
+		
+		// also check for hi-reg-ops with PC as destination
+		block_end = IsTHUMBBranch[THUMBHash((u16)instruction)] || ((instruction & 0xfc87) == 0x4487);
         (this->*THUMBInstructions[THUMBHash((u16)instruction)])(instruction);
-        // same here
         pc += 2;
     }
 	
-    if constexpr (MakeCache) {
-        if (block_end || !(corrected_pc & (Mem::InstructionCacheBlockSizeBytes - 1))) {
-            // branch or block alignment
-            return true;
-        }
-        return false;
-    }
-    else {
-        // return whether we might have a cache block
-        return InCacheRegion(corrected_pc);  // corrected_pc = pc - (ARMMode ? 8 : 4)
-    }
+	if (block_end || !(corrected_pc & (Mem::InstructionCacheBlockSizeBytes - 1))) {
+		// branch or block alignment
+		return true;
+	}
+	return false;
 }
 ```
 Basically, if `MakeCache` is `true`, `Step` returns whether the block has ended or not. If `MakeCache` is `false`, `Step()` returns whether a block can be made, or might be available.
