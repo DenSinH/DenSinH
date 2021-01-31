@@ -32,8 +32,8 @@ me to check the scheduler, or break blocks early at "random" moments. These thin
 First of all, this is how my interpreter loop looked:
 ```
 check scheduler:
-	if there are events to handle: do events 
-	otherwise: step once
+    if there are events to handle: do events 
+    otherwise: step once
 ```
 Then let's first look at the classic interpreter. The idea for this is very simple:
 ```
@@ -46,11 +46,11 @@ wouldn't have to decode it again if we store the information on the instruction.
 blocks of instructions at once, so that we dont have to look up the cached instruction every time, but just look up a block and run for multiple instructions at once! 
 
 Now, the GBA memory map has some mirroring, and code cannot be ran from all regions. So I decided to split things up a bit. There are 3 regions I allow caching in:
-	- the BIOS: this region cannot be written to, so once we make a cached block, we never have to delete it again!
-	- ROM: this region is also not writeable, so we can save the cache blocks forever!
-	- iWRAM: code often gets run from here because it takes very few cycles to fetch data from here. We have to handle this region slightly differently though, because code can
-			 get overwritten.
-			 
+    - the BIOS: this region cannot be written to, so once we make a cached block, we never have to delete it again!
+    - ROM: this region is also not writeable, so we can save the cache blocks forever!
+    - iWRAM: code often gets run from here because it takes very few cycles to fetch data from here. We have to handle this region slightly differently though, because code can
+             get overwritten.
+             
 Cache "blocks" are blocks of instructions following each other that can be executed after each other. These blocks have to end somewhere, and the most logical places are branches or
 on certain boundaries. I set these boundaries at every 256 bytes. This number is rather arbitrary, but setting this number allows you to only delete certain blocks when writes to
 iWRAM happen.
@@ -59,11 +59,11 @@ The idea for the main loop of the emulator becomes slightly different:
 ```
 check if current address has a cached block 
 if it doesn't have one, and none can be created: 
-	run interpreter normally, until it can 
+    run interpreter normally, until it can 
 if it doesn't have one, and one can be created:
-	make a cache block and run interpreter normally*, but record the instructions
+    make a cache block and run interpreter normally*, but record the instructions
 if it has one:
-	run the cache block**
+    run the cache block**
 ```
 Now this is not the entire story. As I mentioned before, there is still a scheduler, and IRQs might happen that interrupt a block. Now what I could naively do (and did at first) is just
 break whenever we are interrupted by the scheduler. I don't need to always break though. Some events, like adding a sample to the audio buffer, shouldn't need to interrupt the CPU at all, since
@@ -80,43 +80,43 @@ The extra steps will be:
 This might seem a bit abstract, so here is some actual code. Before I added the cached interpreter, the main loop essentially looked like this (some details like pipeline stuff are left out):
 ```CXX
 while (true) {
-	while (!Scheduler.ShouldDoEvents()) {
-		CPU.Step();
-	}
+    while (!Scheduler.ShouldDoEvents()) {
+        CPU.Step();
+    }
 
-	Scheduler.DoEvents();
+    Scheduler.DoEvents();
 }
 ```
 with 
 ```
 ARM7TDMI::Step() {
-	u32 instruction;
-	if (ARMMode){ 
-		instruction = Mem->Read<u32>(pc - 8);
-		if (CheckCondition(instruction >> 28)) {
-			(this->*ARMInstructions[ARMHash(instruction)])(instruction);
-		}
-	}
-	else {
-		instruction = Mem->Read<u16>(pc - 4);
-		(this->*THUMBInstructions[THUMBHash(instruction)])(instruction);
-	}
+    u32 instruction;
+    if (ARMMode){ 
+        instruction = Mem->Read<u32>(pc - 8);
+        if (CheckCondition(instruction >> 28)) {
+            (this->*ARMInstructions[ARMHash(instruction)])(instruction);
+        }
+    }
+    else {
+        instruction = Mem->Read<u16>(pc - 4);
+        (this->*THUMBInstructions[THUMBHash(instruction)])(instruction);
+    }
 }
 ```
 A classic interpreter loop. Now we want to add something to store our cache blocks in. 
 ```CXX
 // a simple struct holding the instruction and the handler
 struct CachedInstruction {
-	const u32 Instruction;
-	const void __fastcall (ARM7TDMI::*Pointer)(u32 instruction);
+    const u32 Instruction;
+    const void __fastcall (ARM7TDMI::*Pointer)(u32 instruction);
 }
 
 // a struct holding a block of instructions
 struct InstructionCache {
-	const bool ARM;
-	const bool Deletable;  // true in iWRAM
-	const u16 AccessTime;
-	std::vector<CachedInstruction> Instructions;
+    const bool ARM;
+    const bool Deletable;  // true in iWRAM
+    const u16 AccessTime;
+    std::vector<CachedInstruction> Instructions;
 }
 ```
 And we want some lookup tables for the cache blocks in our CPU.
@@ -148,39 +148,39 @@ otherwise: cache present!
 We also need a way to update the current cache (simplified to remove some range checks etc.):
 ```CXX
  constexpr std::unique_ptr<InstructionCache>* ARM7TDMI::GetCache(const u32 address) {
-	switch (static_cast<MemoryRegion>(address >> 24)) {
-		case MemoryRegion::BIOS: {
-			const u32 index = (address & (Mem::BIOSSize - 1)) >> 1;
-			// check if cache exists
-			if (BIOSCache[index]) {
-				return &BIOSCache[index];
-			}
+    switch (static_cast<MemoryRegion>(address >> 24)) {
+        case MemoryRegion::BIOS: {
+            const u32 index = (address & (Mem::BIOSSize - 1)) >> 1;
+            // check if cache exists
+            if (BIOSCache[index]) {
+                return &BIOSCache[index];
+            }
 
-			// show that no cache exists, but can be created
-			return &BIOSCache[index];
-		}
-		case MemoryRegion::iWRAM: {
-			const u32 index = (address & (Mem::iWRAMSize - 1)) >> 1;
-			if ((address & (Mem::iWRAMSize - 1)) < (Mem::iWRAMSize - Mem::StackSize)) {
-				if (iWRAMCache[index]) {
-					return &iWRAMCache[index];
-				}
-				// mark index as filled for faster page clearing
-				iWRAMCacheFilled[(address & (Mem::iWRAMSize - 1)) / Mem::InstructionCacheBlockSizeBytes].push_back(index);
-				return &iWRAMCache[index];
-			}
-			return nullptr;
-		}
-		case MemoryRegion::ROM: {
-			const u32 index = (address & (Mem::ROMSize - 1)) >> 1;
-			if (ROMCache[index]) {
-				return &ROMCache[index];
-			}
-			return &ROMCache[index];
-		}
-		default:
-			return nullptr;
-	}
+            // show that no cache exists, but can be created
+            return &BIOSCache[index];
+        }
+        case MemoryRegion::iWRAM: {
+            const u32 index = (address & (Mem::iWRAMSize - 1)) >> 1;
+            if ((address & (Mem::iWRAMSize - 1)) < (Mem::iWRAMSize - Mem::StackSize)) {
+                if (iWRAMCache[index]) {
+                    return &iWRAMCache[index];
+                }
+                // mark index as filled for faster page clearing
+                iWRAMCacheFilled[(address & (Mem::iWRAMSize - 1)) / Mem::InstructionCacheBlockSizeBytes].push_back(index);
+                return &iWRAMCache[index];
+            }
+            return nullptr;
+        }
+        case MemoryRegion::ROM: {
+            const u32 index = (address & (Mem::ROMSize - 1)) >> 1;
+            if (ROMCache[index]) {
+                return &ROMCache[index];
+            }
+            return &ROMCache[index];
+        }
+        default:
+            return nullptr;
+    }
 }
 ```
 Ignore the `iWRAMCacheFilled` line for now. Alright, so now we have everything set up to make caches! First of all, we need different run loops:
@@ -218,9 +218,9 @@ void ARM7TDMI::RunCache() {
     }
     else {
         // THUMB mode, no need to check condition
-		/*
-		 * the code here is essentially the same as above
-		 */
+        /*
+         * the code here is essentially the same as above
+         */
     }
 }
 ```
@@ -237,15 +237,15 @@ bool ARM7TDMI::Step<true>() {
     u32 instruction;
 
     bool block_end = false;
-	if (ARMMode) {
+    if (ARMMode) {
         instruction = Memory->Read<u32, true>(pc - 8);
-		auto instr = CachedInstruction(instruction, ARMInstructions[ARMHash(instruction)]);
-		(*CurrentCache)->Instructions.push_back(instr);
-		
-		// check if instruction is branch or an operation with Rd == pc (does not detect multiplies with pc as destination)
-		block_end = IsARMBranch[ARMHash(instruction)]
-				 || ((instruction & 0x0000f000) == 0x0000f000)   // any operation with PC as destination
-				 || ((instruction & 0x0e108000) == 0x08108000);  // ldm r, { .. pc }
+        auto instr = CachedInstruction(instruction, ARMInstructions[ARMHash(instruction)]);
+        (*CurrentCache)->Instructions.push_back(instr);
+        
+        // check if instruction is branch or an operation with Rd == pc (does not detect multiplies with pc as destination)
+        block_end = IsARMBranch[ARMHash(instruction)]
+                 || ((instruction & 0x0000f000) == 0x0000f000)   // any operation with PC as destination
+                 || ((instruction & 0x0e108000) == 0x08108000);  // ldm r, { .. pc }
         if (CheckCondition(instruction >> 28)) {
             (this->*ARMInstructions[ARMHash(instruction)])(instruction);
         }
@@ -255,20 +255,20 @@ bool ARM7TDMI::Step<true>() {
     else {
         // THUMB mode
         instruction = Memory->Read<u16, true>(pc - 4);
-		auto instr = CachedInstruction(instruction, THUMBInstructions[THUMBHash((u16)instruction)]);
-		(*CurrentCache)->Instructions.push_back(instr);
-		
-		// also check for hi-reg-ops with PC as destination
-		block_end = IsTHUMBBranch[THUMBHash((u16)instruction)] || ((instruction & 0xfc87) == 0x4487);
+        auto instr = CachedInstruction(instruction, THUMBInstructions[THUMBHash((u16)instruction)]);
+        (*CurrentCache)->Instructions.push_back(instr);
+        
+        // also check for hi-reg-ops with PC as destination
+        block_end = IsTHUMBBranch[THUMBHash((u16)instruction)] || ((instruction & 0xfc87) == 0x4487);
         (this->*THUMBInstructions[THUMBHash((u16)instruction)])(instruction);
         pc += 2;
     }
-	
-	if (block_end || !(corrected_pc & (Mem::InstructionCacheBlockSizeBytes - 1))) {
-		// branch or block alignment
-		return true;
-	}
-	return false;
+    
+    if (block_end || !(corrected_pc & (Mem::InstructionCacheBlockSizeBytes - 1))) {
+        // branch or block alignment
+        return true;
+    }
+    return false;
 }
 ```
 Basically, if `MakeCache` is `true`, `Step` returns whether the block has ended or not. If `MakeCache` is `false`, `Step()` returns whether a block can be made, or might be available.
@@ -314,22 +314,22 @@ in our cache block, so I cannot add those pipelined instructions, and the block 
 And then there is the normal running:
 ```CXX
 while (true) {
-	if (unlikely(Scheduler->ShouldDoEvents())) {
-		Scheduler->DoEvents();
-	}
-	
-	// if Step returns true, we are in a region where we can generate a cache
-	if (Step<false>()) {
-		break;
-	}
+    if (unlikely(Scheduler->ShouldDoEvents())) {
+        Scheduler->DoEvents();
+    }
+    
+    // if Step returns true, we are in a region where we can generate a cache
+    if (Step<false>()) {
+        break;
+    }
 }
 ```
 Basically the same as the classic interpreter loop.
 The entire run function becomes this:
 ```CXX
 ARM7TDMI::Run() {
-	while(true) {
-		CurrentCache = GetCache(corrected_pc);
+    while(true) {
+        CurrentCache = GetCache(corrected_pc);
         if (unlikely(!CurrentCache)) {
             // nullptr: no cache (not iWRAM / ROM)
             // run interpreter normally, without recording cache
@@ -360,7 +360,7 @@ ARM7TDMI::Run() {
             // cache possible and present
             RunCache();
         }
-	}
+    }
 }
 ```
 That is essentially it for making and running caches. There is one last, important thing we need to account for though: writes to iWRAM. 
