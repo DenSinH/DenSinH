@@ -29,7 +29,7 @@ me to check the scheduler, or break blocks early at "random" moments. These thin
 
 ### How does a cached interpreter work?
 
-First of all, this is how my interpreter loop looked:
+First of all, this is how my interpreter loop looked before my cached interpreter:
 ```
 check scheduler:
     if there are events to handle: do events 
@@ -76,7 +76,29 @@ The extra steps will be:
 
 (**): check if the scheduler interrupted the CPU, and if so, return from running the block
 ```
-
+So in the end, the general idea will be this:
+```
+while true:
+	check current address
+	if we are not in a cacheable region (not in ROM/BIOS/iWRAM), do:
+		check scheduler and run events 
+		step, and check if we are in a cacheable region now.
+	if we are in a cacheable region, but no cache exists:
+		make a cache 
+		while true:
+			check the scheduler and run events
+				if the scheduler affected our CPU: break the block and destroy it 
+			fetch 
+			decode and store in cache 
+			run 
+			if the block should end (branch): break 
+	if we are in a cacheable region, and a cache exists:
+		get the cache 
+		for every instruction in the cache:
+			check the scheduler and run events
+				if the scheduler affected our CPU: break
+			run the instruction (in ARM mode: only if condition is true)
+```
 This might seem a bit abstract, so here is some actual code. Before I added the cached interpreter, the main loop essentially looked like this (some details like pipeline stuff are left out):
 ```CXX
 while (true) {
