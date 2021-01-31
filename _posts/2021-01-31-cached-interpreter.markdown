@@ -248,7 +248,7 @@ void ARM7TDMI::RunCache() {
 ```
 Making the block looks very similar to the old loop, but then with a twist. 
 I templated my basic `ARM7TDMI::Step()` to take a boolean `MakeCache`. If we are not making a cache, I made the step function return a boolean saying whether we are in a cacheable region or not. That
-means that `Step<false>` is the same as the above step function, except it returns 
+means that `Step<false>` is the same as the original, basic interpreter step function, except it returns 
 ```CXX
 InCacheRegion(corrected_pc);  // corrected_pc = pc - (ARMMode ? 8 : 4)
 ```
