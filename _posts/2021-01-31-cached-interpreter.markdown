@@ -5,7 +5,7 @@ date:   2021-01-31 20:00:00 +0200
 categories: emulation development, optimizations
 ---
 
-### Writing a cached interpreter
+# Writing a cached interpreter
 
 A while ago, I rewrote my GBA emulator (GBAC-) in C++ (DSHBA) to make it faster. I wanted to add a hardware renderer, and really focus on optimizing it all the way.
 After I was "done", and had reached framerates higher than I had ever hoped before, I recently came back to it, and wanted to try to write a cached interpreter. 
@@ -14,7 +14,7 @@ I have heard a lot of talks about JITs and cached interpreters for performance g
 <b>Note: this is not a general guide for writing a cached interpreter, and this approach might not be viable on every system. In this post I will explain why that is, and focus on my thought
 process and the implementation for my cached interpreter.</b>
 
-#### Why not a JIT?
+### Why not a JIT?
 
 Something you might ask is: "why did you write a cached interpreter and not a JIT". The short answer to this is this: accuracy. The GBA is a fairly old system. Usually for older
 systems, timings are important. Where for modern systems, you don't have to worry about cycles for the most part, other than being in the right ballpark (this is mainly because for 
@@ -27,7 +27,7 @@ was good enough for me, but I wouldn't want to reduce accuracy for the sake of s
 your GPRs (General Purpose Registers), and not of PPU events happening, or audio samples being requested, and most importantly: IRQs firing at the right times. These things, will often require 
 me to check the scheduler, or break blocks early at "random" moments. These things combined led me to write a cached interpreter and not a JIT.
 
-#### How does a cached interpreter work?
+### How does a cached interpreter work?
 
 First of all, this is how my interpreter loop looked:
 ```
@@ -398,7 +398,7 @@ We then look up in this table which indices are filled in that page. This will u
 Then we also need to check if the current block is overwritten. You might recall that we check this in the new run methods. If the address is in the same page as `pc`, we destroy the current block,
 and show that there is no longer a block there by setting `CurrentCache = nullptr`.
 
-#### The pros and the cons
+### The pros and the cons
 
 I've tried it out on a few games, and got between 10-20% performance increase in most games, but some ROMs that run a lot of code from ROM (like AGS) I gained about 50% more frames per second.
 I said this before, but I also tried rewriting it to not dynamically allocate blocks with `unique_ptr`, but besides being a lot more annoying in having to deal with a bump allocator, it also didn't gain
