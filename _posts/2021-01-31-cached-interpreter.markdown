@@ -353,7 +353,7 @@ ARM7TDMI::Run() {
     while(true) {
         CurrentCache = GetCache(corrected_pc);
         if (unlikely(!CurrentCache)) {
-            // nullptr: no cache (not iWRAM / ROM)
+            // nullptr: no cache (not iWRAM / ROM / BIOS)
             // run interpreter normally, without recording cache
             while (true) {
                 if (unlikely(Scheduler->ShouldDoEvents())) {
