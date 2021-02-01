@@ -31,7 +31,7 @@ Which of these 2 a cartridge has is impossible to figure out just by looking at 
 
 This means that data transferred to or from the EEPROM chip is always 1 bit at a time. Any transfer made to EEPROM will be "masked" to only the bottom bit, and any read will just be 1 or 0.
 
-On a large ROM (of greater than 16MB in size), ROM is restricted to `0x0800'000h-0x09ff'feff`. So, EEPROM can be accessed between `0x09ff'ff00` and `0x09ff'ffff`. This is also mirrored to the higher waitstate cartridge regions. Judging from the source code of certain emulators, it can really onlly be accessed in the `0x0dxx'xxxx` region of ROM, despite what GBATek says. On smaller ROMs, it can also be accessed between `0d00'0000h-0dff'ffffh.`
+On a large ROM (of greater than 16MB in size), ROM is restricted to `0x0800'000h-0x09ff'feff`. So, EEPROM can be accessed between `0x09ff'ff00` and `0x09ff'ffff`. This is also mirrored to the higher waitstate cartridge regions. Judging from the source code of certain emulators, it can really onlly be accessed in the `0x0dxx'xxxx` region of ROM (second waitstate), despite what GBATek says. On smaller ROMs, it can also be accessed between `0x0d00'0000-0x0dff'ffff.`
 
 The actual address that is accessed for the EEPROM access does not matter, as the "internal address" has to be sent first, and then data can be written or read.
 
