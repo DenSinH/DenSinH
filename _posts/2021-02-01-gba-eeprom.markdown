@@ -31,7 +31,7 @@ Which of these 2 a cartridge has is impossible to figure out just by looking at 
 
 This means that data transferred to or from the EEPROM chip is always 1 bit at a time. Any transfer made to EEPROM will be "masked" to only the bottom bit, and any read will just be 1 or 0.
 
-On a large ROM (of greater than 16MB in size), ROM is restricted to `0800'0000h-09ff'feffh`. So, EEPROM can be accessed between `09ff'ff00` and `09ff'ffff`. On smaller ROMs, it can also be accessed between `0d00'0000h-0dff'ffffh.`
+On a large ROM (of greater than 16MB in size), ROM is restricted to `0800'0000h-09ff'feffh`. So, EEPROM can be accessed between `09ff'ff00` and `09ff'ffff`. This is also mirrored to the higher waitstate cartridge regions. Judging from the source code of certain emulators, it can really onlly be accessed in the `0x0dxx'xxxx` region of ROM, despite what GBATek says. On smaller ROMs, it can also be accessed between `0d00'0000h-0dff'ffffh.`
 
 The actual address that is accessed for the EEPROM access does not matter, as the "internal address" has to be sent first, and then data can be written or read.
 
@@ -50,6 +50,7 @@ When you want to read data from the EEPROM, you have to send the following seque
 2 bits "11" (Read Request)
 n bits eeprom address (MSB first, 6 or 14 bits, depending on EEPROM)
 1 bit "0"
+(GBATek)
 ```
 
 #### EEPROM size detection
@@ -81,6 +82,7 @@ This is how the address is transferred for a read access. After the address is t
 ```
 4 bits  - ignore these
 64 bits - data (conventionally MSB first)
+(GBATek)
 ```
 These accesses have to be made in the same region as the address has to be written to, but just read instead of written. After this, it is up to the game how it handles the individual bits returned by the DMA.
 
@@ -94,6 +96,7 @@ The data that has to be written is:
 n bits eeprom address (MSB first, 6 or 14 bits, depending on EEPROM)
 64 bits data (conventionally MSB first)
 1 bit "0"
+(GBATek)
 ```
 So the start is similar to the read request, except a different "code". Then the address, again different sizes depending on the EEPROM's size. Then 64 bits / 8 bytes of data, and one bit to end the transfer.
 
