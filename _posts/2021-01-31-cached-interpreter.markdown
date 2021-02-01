@@ -467,7 +467,7 @@ InstructionCache ARM7TDMI::NewCache() {
 The initial check is to see if we can fit an entire new cache in the unused space of the `Cache` array. If this is not the case, we will have to destroy all the cache blocks and just start again.
 And when adding new instructions, instead of pushing them back on the `InstructionCache`, I would do
 ```CXX
-ARM7TDMI::BumpAlloc(CachedInstruction& instr) {
+void ARM7TDMI::BumpAlloc(CachedInstruction& instr) {
 	Cache[CacheEnd++] = instr;
 	CurrentCache->Length++;
 }
