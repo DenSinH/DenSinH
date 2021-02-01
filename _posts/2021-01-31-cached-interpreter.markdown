@@ -430,4 +430,51 @@ The reason that this dynamic allocation probably doesn't matter performance wise
 and only have to be allocated once. Only in the iWRAM region will blocks have to be recreated and allocated. The big read only code region is a major reason why this might not be the case for other systems.
 In a lot of systems, the entire memory range is writeable, and you would spend a lot more time allocating and deallocating memory for the blocks. 
 
+### Bump allocator 
+
+I've mentioned this term before, and said that I did not use it, but I will briefly explain an approach to using a bump allocator instead. A bump allocator basically means you have a large array
+holding cached instructions, and every time you make a new block you push instructions to that instead of to an allocated `InstructionCache`. The caches themselves would look a bit different as well.
+When I wrote one to see performance differences, I did something like this:
+```CXX
+struct InstructionCache {
+	const bool ARM;
+	u8 Length;
+	CachedInstruction* const Pointer;
+}
+```
+As you can see, the `InstructionCache` now no longer holds the instructions, but rather a pointer to the instructions in the pre-allocated memory, and a constant of how long the block is.
+We would no longer have an array of `unique_ptr<InstructionCache>`, but rather a straight up array of `InstructionCache`s. Our `CurrentCache` would be a `InstructionCache*`, and to check if 
+the cache it points to is empty, we would check if the `Length` field is 0.
+You would then have something like a 
+```CXX
+std::array<CachedInstruction, 0x0100'0000> Cache;
+u32 CacheEnd;  // points to the first non-filled space in Cache
+```
+to hold the instructions. The length of this `Cache` is a bit arbitrary, and probably something you'll have to play around with.
+You want it to be big enough so that you are not constantly invalidating your cache because it's overflowing, but small enough that
+your memory usage is not through the roof. `InstructionCache` would be pointing into this `Cache` buffer of instructions.
+When making a new cache, I did: 
+```CXX
+InstructionCache ARM7TDMI::NewCache() {
+	if (CacheEnd >= (Cache.size() - (Mem::InstructionCacheBlockSizeBytes >> 1)) {
+		// invalidate entire cache, so go over the array(s) of `InstructionCache`s and set their length to 0
+		CacheEnd = 0;
+	}
+	return InstructionCache(ARMMode, 0, &Cache[CacheEnd]);
+}
+```
+The initial check is to see if we can fit an entire new cache in the unused space of the `Cache` array. If this is not the case, we will have to destroy all the cache blocks and just start again.
+And when adding new instructions, instead of pushing them back on the `InstructionCache`, I would do
+```CXX
+ARM7TDMI::BumpAlloc(CachedInstruction& instr) {
+	Cache[CacheEnd++] = instr;
+	CurrentCache->Length++;
+}
+```
+This method can be very advantagious for systems where the entire address space is writeable, as you would have to invalidate blocks anyway. For a system like the GBA, where you have a lot 
+of read-only memory, I found that it not as good of a fit, as we wouldn't want to be destroying blocks that will not change anyway. There might be better ways to write a bump allocator, but this
+is just the idea I had for it, and how I wrote it to see the difference. 
+
+I could maybe have taken a hybrid approach, the dynamically allocated blocks for ROM/BIOS and a bump allocator for iWRAM, but it really won't win much.
+
 All in all, it was not only a quest for more performance, but also a fun learning experience for trying out the idea I had for the cached interpreter. Thank you for reading!
