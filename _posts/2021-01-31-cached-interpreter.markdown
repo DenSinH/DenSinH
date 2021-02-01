@@ -46,10 +46,9 @@ wouldn't have to decode it again if we store the information on the instruction.
 blocks of instructions at once, so that we dont have to look up the cached instruction every time, but just look up a block and run for multiple instructions at once! 
 
 Now, the GBA memory map has some mirroring, and code cannot be ran from all regions. So I decided to split things up a bit. There are 3 regions I allow caching in:
-    - the BIOS: this region cannot be written to, so once we make a cached block, we never have to delete it again!
-    - ROM: this region is also not writeable, so we can save the cache blocks forever!
-    - iWRAM: code often gets run from here because it takes very few cycles to fetch data from here. We have to handle this region slightly differently though, because code can
-             get overwritten.
+  - the BIOS: this region cannot be written to, so once we make a cached block, we never have to delete it again!
+  - ROM: this region is also not writeable, so we can save the cache blocks forever!
+  - iWRAM: code often gets run from here because it takes very few cycles to fetch data from here. We have to handle this region slightly differently though, because code can get overwritten.
              
 Cache "blocks" are blocks of instructions following each other that can be executed after each other. These blocks have to end somewhere, and the most logical places are branches or
 on certain boundaries. I set these boundaries at every 256 bytes. This number is rather arbitrary, but setting this number allows you to only delete certain blocks when writes to
