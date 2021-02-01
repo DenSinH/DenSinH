@@ -80,8 +80,9 @@ So in the end, the general idea will be this:
 while true:
 	check current address
 	if we are not in a cacheable region (not in ROM/BIOS/iWRAM), do:
-		check scheduler and run events 
-		step, and check if we are in a cacheable region now.
+		while we are not in a cacheable region:
+			check scheduler and run events 
+			step, and check if we are in a cacheable region now.
 	if we are in a cacheable region, but no cache exists:
 		make a cache 
 		while true:
