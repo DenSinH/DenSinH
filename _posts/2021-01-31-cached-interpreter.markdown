@@ -2,7 +2,8 @@
 layout: post
 title:  "[GBA] Writing a cached interpreter"
 date:   2021-01-31 20:00:00 +0200
-categories: emulation development, optimizations
+categories: emulation optimizations
+author: DenSinH
 ---
 
 # Writing a cached interpreter
