@@ -11,7 +11,7 @@ author: DenSinH
 The GBA has games with different sorts of backup memory. There are 3 types:
   - SRAM, straightforward RAM on the cartridge
   - Flash, flash storage on the cartridge (explained [here](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html))
-  - EEPROM, whil I will attempt to explain in this document.
+  - EEPROM, which I will attempt to explain in this document.
 
 You can see what save type a cartridge uses most accurately by using a game database. If you don't have one of those available, you can check for certain strings in the cartridge (also explained [here](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html)).
 
