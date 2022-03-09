@@ -144,6 +144,7 @@ for achievement, how_to_unlock in achievements.items():
 
 # some links aren't picked up
 achievement_data["Hoarah Loux the Warrior"]["url"] = "https://eldenring.wiki.fextralife.com/Godfrey,+First+Elden+Lord"
+achievement_data["Godfrey, the First Lord"]["url"] = "https://eldenring.wiki.fextralife.com/Godfrey,+First+Elden+Lord+(Golden+Shade)"
 achievement_data["Shardbearer Godrick"]["url"] = "https://eldenring.wiki.fextralife.com/Godrick+the+Grafted"
 achievement_data["Shardbearer Melania"]["url"] = "https://eldenring.wiki.fextralife.com/Malenia+Blade+of+Miquella"
 achievement_data["Shardbearer Mohg"]["url"] = "https://eldenring.wiki.fextralife.com/Mohg,+Lord+of+Blood"
