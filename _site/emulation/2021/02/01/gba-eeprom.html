@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>[GBA] EEPROM Save Type | Dennis H</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="[GBA] EEPROM Save Type" />
+<meta name="author" content="DenSinH" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="EEPROM Save Type" />
+<meta property="og:description" content="EEPROM Save Type" />
+<link rel="canonical" href="http://localhost:4000/DenSinH/emulation/2021/02/01/gba-eeprom.html" />
+<meta property="og:url" content="http://localhost:4000/DenSinH/emulation/2021/02/01/gba-eeprom.html" />
+<meta property="og:site_name" content="Dennis H" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-02-01T12:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="[GBA] EEPROM Save Type" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"DenSinH"},"dateModified":"2021-02-01T12:00:00+01:00","datePublished":"2021-02-01T12:00:00+01:00","description":"EEPROM Save Type","headline":"[GBA] EEPROM Save Type","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/DenSinH/emulation/2021/02/01/gba-eeprom.html"},"url":"http://localhost:4000/DenSinH/emulation/2021/02/01/gba-eeprom.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/DenSinH/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/DenSinH/feed.xml" title="Dennis H" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/DenSinH/">Dennis H</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/DenSinH/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">[GBA] EEPROM Save Type</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-02-01T12:00:00+01:00" itemprop="datePublished">Feb 1, 2021
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">DenSinH</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="eeprom-save-type">EEPROM Save Type</h1>
+
+<p>The GBA has games with different sorts of backup memory. There are 3 types:</p>
+<ul>
+  <li>SRAM, straightforward RAM on the cartridge</li>
+  <li>Flash, flash storage on the cartridge (explained <a href="https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html">here</a>)</li>
+  <li>EEPROM, which I will attempt to explain in this document.</li>
+</ul>
+
+<p>You can see what save type a cartridge uses most accurately by using a game database. If you don’t have one of those available, you can check for certain strings in the cartridge (also explained <a href="https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html">here</a>).</p>
+
+<p><a href="http://problemkaputt.de/gbatek.htm#gbacartbackupeeprom">GBATek</a> also explains the EEPROM save type, but I found it quite brief, so I will try to add on to this documentation.</p>
+
+<h3 id="eeprom-types">EEPROM types</h3>
+
+<p>There are 2 different types of EEPROM cartridges:</p>
+<ul>
+  <li>512 bytes / 4Kbit EEPROM</li>
+  <li>8KB / 64Kbit EEPROM</li>
+</ul>
+
+<p>Which of these 2 a cartridge has is impossible to figure out just by looking at the cartridge. Your only options are a game database, or a trick where you check the first access made to it, which I will explain later.</p>
+
+<h3 id="addressing-and-waitstates">Addressing and waitstates</h3>
+
+<blockquote>
+  <p>The eeprom is connected to Bit0 of the data bus, and to the upper 1 bit (or upper 17 bits in case of large 32MB ROM) of the cartridge ROM address bus, communication with the chip takes place serially. (GBATek)</p>
+</blockquote>
+
+<p>This means that data transferred to or from the EEPROM chip is always 1 bit at a time. Any transfer made to EEPROM will be “masked” to only the bottom bit, and any read will just be 1 or 0.</p>
+
+<p>On a large ROM (of greater than 16MB in size), ROM is restricted to <code class="language-plaintext highlighter-rouge">0x0800'000h-0x09ff'feff</code>. So, EEPROM can be accessed between <code class="language-plaintext highlighter-rouge">0x09ff'ff00</code> and <code class="language-plaintext highlighter-rouge">0x09ff'ffff</code>. This is also mirrored to the higher waitstate cartridge regions. Judging from the source code of certain emulators, it can really onlly be accessed in the <code class="language-plaintext highlighter-rouge">0x0dxx'xxxx</code> region of ROM (second waitstate), despite what GBATek says. On smaller ROMs, it can also be accessed between <code class="language-plaintext highlighter-rouge">0x0d00'0000-0x0dff'ffff.</code></p>
+
+<p>The actual address that is accessed for the EEPROM access does not matter, as the “internal address” has to be sent first, and then data can be written or read.</p>
+
+<p>Data can be read or written. The initial pattern for the access is similar: the mode has to be sent, and the address as well.</p>
+
+<p>This is also where the different EEPROM sizes come into play. The EEPROM can only transfer data in units of 64 bits. Addressing also works in units of 64 bits. This means, that while for a 512 byte EEPROM, you have 0x200 bytes to address, there are only 0x40 blocks of 64 bits. The address will only be in the range of <code class="language-plaintext highlighter-rouge">0 - 0x3f</code>. The bus width for a 512 byte EEPROM is 6, and the address that will be sent will also be 6 bits long.</p>
+
+<p>For an 8KB EEPROM, there are 0x2000 bytes, but only 0x400 blocks of 64 bits. The address will thus only be in the range <code class="language-plaintext highlighter-rouge">0 - 0x3ff</code>. The bus width for a 8KB EEPROM is 14 bits, but the address only 10. The address that gets sent will be 14 bits long, but the first 4 bits should be zero, as they don’t correspond with any blocks.</p>
+
+<p>It is important to actually have the addressing happen in blocks of 8 bytes / 64 bits. I did this wrong in my emulator at first, and it caused some sneaky corrupted saves.</p>
+
+<h3 id="reading-data">Reading data</h3>
+
+<p>When you want to read data from the EEPROM, you have to send the following sequence of bits:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2 bits "11" (Read Request)
+n bits eeprom address (MSB first, 6 or 14 bits, depending on EEPROM)
+1 bit "0"
+(GBATek)
+</code></pre></div></div>
+
+<h4 id="eeprom-size-detection">EEPROM size detection</h4>
+<p>This <code class="language-plaintext highlighter-rouge">n</code> is what you can deduce the EEPROM size from. A trick to detect the EEPROM size is to keep it ambiguous until the first (read) request is made. Requests have to be done by DMA, since normal transfers via LDRH/STRH are too slow, and don’t keep the right bits set during the transfer.</p>
+
+<p>Since DMA channel 3 is the only DMA channel that can access ROM, you could, on the first (read) access, check the transfer length of DMA channel 3. If it’s of length 9, a 6 bit address will be sent, and the EEPROM is (likely) a 512 byte EEPROM. If it’s of length 17, a 14 bit address will be sent, and the EEPROM is (likely) an 8KB EEPROM.</p>
+
+<p>This method is not perfect though. Some games, like the NES classic series, try to trick you into thinking it’s the wrong EEPROM size, by doing a transfer of the “wrong” length. Your best bet will be a game database, or some sort of hybrid approach.</p>
+
+<h4 id="the-transfer">The transfer</h4>
+
+<p>Since it’s annoying to have to place individual bits at a (half)word interval in memory to then transfer data, a common approach for games/programs is to “shift” them into memory. Basically, if I wanted to send a read request to an 8KB EEPROM to block <code class="language-plaintext highlighter-rouge">0x123</code>, I would need to transfer: <code class="language-plaintext highlighter-rouge">(0b11 &lt;&lt; 15) | (0x123 &lt;&lt; 1) | 0 = 0x18246</code>. Suppose <code class="language-plaintext highlighter-rouge">r1</code> holds a pointer to a the end of a 17 halfword buffer where we want to store our bits, and <code class="language-plaintext highlighter-rouge">r0</code> holds <code class="language-plaintext highlighter-rouge">0x18246</code>. One could simply do</p>
+<pre><code class="language-ARMASM">strh r0, [r1], #-2
+lsr r0, #1
+</code></pre>
+<p>17 times, and the buffer will then be filled with</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0x0001
+...
+0x3048
+0x6091
+0xc123
+0x8246
+</code></pre></div></div>
+<p>such that the 0th bit of each halfword exactly reads out <code class="language-plaintext highlighter-rouge">0x18246</code> (MSB first). I can then transfer this buffer to EEPROM. Since only bit 0 is connected to the data bus, it does not matter that there is other data in the other 15 bits of each halfword.</p>
+
+<p>This is how the address is transferred for a read access. After the address is transferred, we can read back the data. This again has to happen by DMA. There are 68 bytes to be read back with DMA:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>4 bits  - ignore these
+64 bits - data (conventionally MSB first)
+(GBATek)
+</code></pre></div></div>
+<p>These accesses have to be made in the same region as the address has to be written to, but just read instead of written. After this, it is up to the game how it handles the individual bits returned by the DMA.</p>
+
+<h3 id="writing-data">Writing data</h3>
+
+<p>The written data immediately follows the address that is written. I have never encountered a game doing a write access before a read access, but it’s possible, so it might be good to check if this is the case when trying to detect the EEPROM’s size.</p>
+
+<p>The data that has to be written is:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2 bits "10" (Write Request)
+n bits eeprom address (MSB first, 6 or 14 bits, depending on EEPROM)
+64 bits data (conventionally MSB first)
+1 bit "0"
+(GBATek)
+</code></pre></div></div>
+<p>So the start is similar to the read request, except a different “code”. Then the address, again different sizes depending on the EEPROM’s size. Then 64 bits / 8 bytes of data, and one bit to end the transfer.</p>
+
+<p>These transfers might also be made in a similar way to the read access, where the data is first “shifted” to a buffer, and then transferred by DMA.</p>
+
+<p>After a write transfer, games likely check if the transfer is complete. They do this by reading from the EEPROM and waiting until it returns 1. Martin Korth describes in GBATek how it’s important to set a timeout if the EEPROM does not respond, but some games might just hang if you don’t return 1 on reads after a write access.</p>
+
+  </div><a class="u-url" href="/DenSinH/emulation/2021/02/01/gba-eeprom.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/DenSinH/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Dennis H</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Dennis H</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/DenSinH"><svg class="svg-icon"><use xlink:href="/DenSinH/assets/minima-social-icons.svg#github"></use></svg> <span class="username">DenSinH</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Blog of a programmer in the Netherlands.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

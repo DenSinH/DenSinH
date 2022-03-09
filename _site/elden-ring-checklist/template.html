@@ -1,0 +1,141 @@
+<html>
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+.check-list {
+    padding-left: 0;
+}
+
+.check-list li {
+    list-style-type: none;
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-start;
+}
+
+/* Boilerplate stuff */
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.6rem; /* 18px */
+    background-color: #324047;
+    color: #efefef;
+}
+
+html, body, section {
+    height: 100%;
+}
+
+section {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+}
+
+li input[type="checkbox"] {
+    margin: 0px 10px;
+    width: 20px;
+    height: 20px;
+}
+
+li div.content {
+    margin-left: 0;
+}
+
+h3, h4 {
+    margin: 0;
+    color: #efefef;
+}
+
+a {
+    color: #efefef;
+    text-decoration: dashed;
+    border-bottom: dashed 2px #efefef;
+    margin-top: 0;
+}
+</style>
+
+<script>
+    function dump() {
+        let box, boxes = [];
+        $('.checkbox').each(function() { // run through each of the checkboxes
+            box = {id: $(this).attr('id'), value: $(this).prop('checked')};
+            boxes.push(box);
+        });
+        localStorage.setItem("eldenring-checklist", JSON.stringify(boxes));
+    }
+
+    function load() {
+        let boxes = JSON.parse(localStorage.getItem('eldenring-checklist'));
+        if (!boxes.length) { return; }
+
+        for (let i = 0; i < boxes.length; i++) {
+            console.debug(boxes[i].value == 'on');
+            $('#' + boxes[i].id ).prop('checked', boxes[i].value);
+        }
+    }
+
+    $(document).ready(function() {
+        $('.checkbox').on('click', dump);
+        load();
+    });
+</script>
+
+</head>
+
+<body>
+<h2>
+    Elden Ring achievements checklist
+</h2>
+
+<p>
+    This checklist was (mostly) automatically generated.
+    Check out the <a href="https://eldenring.wiki.fextralife.com/Trophy+&+Achievement+Guide" target="_blank">fextralife wiki achievement guide</a> for extra info.
+</p>
+
+<ul class="check-list">
+    {% for name, achievement in achievements.items() %}
+    <li class="achievement {{ achievement['type'] }}">
+        <input type="checkbox" id="{{ name|html_tag }}" class="checkbox">
+        <div class="content">
+            {% if achievement['url'] %}
+                <h3><a href="{{ achievement['url'] }}" target="_blank">{{ name }}</a></h3>
+            {% else %}
+                <h3>{{ name }}</h3>
+            {% endif %}
+            <p>{{ achievement['how-to-unlock'] }}</p>
+            {% if achievement['sub'] %}
+            <ul class="sublist">
+                {% for sub_name, sub in achievement['sub'].items() %}
+                <li class="sub">
+                    <input type="checkbox" id="{{ sub_name|html_tag }}" class="checkbox">
+                    <div class="content">
+                        {% if sub['url'] %}
+                            <h4><a href="{{ sub['url'] }}" target="_blank">{{ sub_name }}</a></h4>
+                        {% else %}
+                            <h4>{{ sub_name }}</h4>
+                        {% endif %}
+                        <p>{{ sub['where'] }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+
+</html>

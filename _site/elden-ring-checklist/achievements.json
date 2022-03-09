@@ -1,0 +1,378 @@
+{
+    "Age of the Stars": {
+        "how-to-unlock": "Achieved the \"Age of the Stars\" ending",
+        "type": "ending",
+        "url": "https://eldenring.wiki.fextralife.com/Endings",
+        "sub": null
+    },
+    "Ancestor Spirit": {
+        "how-to-unlock": "Defeated Ancestor Spirit",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Ancestor+Spirit",
+        "sub": null
+    },
+    "Astel, Naturalborn of the Void": {
+        "how-to-unlock": "Defeated Astel, Naturalborn of the Void",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Astel,+Naturalborn+of+the+Void",
+        "sub": null
+    },
+    "Commander Niall": {
+        "how-to-unlock": "Defeated Commander Niall",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Commander+Niall",
+        "sub": null
+    },
+    "Dragonkin Soldier of Nokstella": {
+        "how-to-unlock": "Defeated Dragonkin Soldier of Nokstella",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Dragonkin+Soldier+of+Nokstella",
+        "sub": null
+    },
+    "Dragonlord Placidusax": {
+        "how-to-unlock": "Defeated Dragonlord Placidusax",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Dragonlord+Placidusax",
+        "sub": null
+    },
+    "Elden Lord": {
+        "how-to-unlock": "Achieved the \"Elden Lord\" ending",
+        "type": "ending",
+        "url": "https://eldenring.wiki.fextralife.com/Endings",
+        "sub": null
+    },
+    "Elden Ring": {
+        "how-to-unlock": "Obtained all trophies",
+        "type": "misc",
+        "url": null,
+        "sub": null
+    },
+    "Elemer of the Briar": {
+        "how-to-unlock": "Defeated Elemer of the Briar",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Elemer+of+the+Briar",
+        "sub": null
+    },
+    "Erdtree Aflame": {
+        "how-to-unlock": "Used kindling to set the Erdtree aflame",
+        "type": "misc",
+        "url": null,
+        "sub": null
+    },
+    "Fire Giant": {
+        "how-to-unlock": "Defeated Fire Giant",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Fire+Giant",
+        "sub": null
+    },
+    "God-Slaying Armament": {
+        "how-to-unlock": "Upgraded any armament to its highest stage",
+        "type": "misc",
+        "url": null,
+        "sub": null
+    },
+    "Godfrey, the First Lord": {
+        "how-to-unlock": "Defeated Godfrey the First Lord",
+        "type": "boss",
+        "url": null,
+        "sub": null
+    },
+    "Godskin Duo": {
+        "how-to-unlock": "Defeated Goskin Duo",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Godskin+Duo",
+        "sub": null
+    },
+    "Godskin Noble": {
+        "how-to-unlock": "Defeated Goskin Noble",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Godskin+Noble",
+        "sub": null
+    },
+    "Great Rune": {
+        "how-to-unlock": "Restored the power of a Great Rune",
+        "type": "misc",
+        "url": null,
+        "sub": null
+    },
+    "Hoarah Loux the Warrior": {
+        "how-to-unlock": "Defeated Hoarah Loux the Warrior",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Godfrey,+First+Elden+Lord",
+        "sub": null
+    },
+    "Legendary Armaments": {
+        "how-to-unlock": "Acquired all legendary armaments",
+        "type": "legendary-items",
+        "url": null,
+        "sub": {
+            "Ruins Greatsword": {
+                "where": "Defeat the Misbegotten Warrior and Crucible Knight in Redmane Castle",
+                "url": "https://eldenring.wiki.fextralife.com/Ruins+Greatsword"
+            },
+            "Eclipse Shotel": {
+                "where": "Chest in Castle Sol",
+                "url": "https://eldenring.wiki.fextralife.com/Eclipse+Shotel"
+            },
+            "Grafted Blade Greatsword": {
+                "where": "Kill Leonine Misbegotten in Castle Morne",
+                "url": "https://eldenring.wiki.fextralife.com/Grafted+Blade+Greatsword"
+            },
+            "Sword of Night and Flame": {
+                "where": "Chest in the Carian Manor",
+                "url": "https://eldenring.wiki.fextralife.com/Sword+of+Night+and+Flame"
+            },
+            "Marais Executioner's Sword": {
+                "where": "Kill Elemer of the Briar in The Shaded Castle",
+                "url": "https://eldenring.wiki.fextralife.com/Marais+Executioner's+Sword"
+            },
+            "Dark Moon Greatsword": {
+                "where": "Follow Ranni's quest until the Moonlight Altar",
+                "url": "https://eldenring.wiki.fextralife.com/Dark+Moon+Greatsword"
+            },
+            "Devourer's Scepter": {
+                "where": "Kill Invader Bernahl in Farum Azula",
+                "url": "https://eldenring.wiki.fextralife.com/Devourer's+Scepter"
+            },
+            "Golden Order Greatsword": {
+                "where": "Kill Misbegotten Crusader in the Cave of the Forlorn",
+                "url": "https://eldenring.wiki.fextralife.com/Golden+Order+Greatsword"
+            },
+            "Bolt of Gransax": {
+                "where": "Loot on the Giant spear in Leyndell",
+                "url": "https://eldenring.wiki.fextralife.com/Bolt+of+Gransax"
+            }
+        }
+    },
+    "Legendary Ashen Remains": {
+        "how-to-unlock": "Acquired all legendary ashen remains",
+        "type": "legendary-items",
+        "url": null,
+        "sub": {
+            "Lhutel the Headless": {
+                "where": "Dropped by the Cemetery Shade at the Tombsward Catacombs",
+                "url": "https://eldenring.wiki.fextralife.com/Lhutel+the+Headless"
+            },
+            "Black Knife Tiche": {
+                "where": "Dropped by Alecto, Black Knife Ringleader upon defeat at the Ringleader's Evergaol",
+                "url": "https://eldenring.wiki.fextralife.com/Black+Knife+Tiche"
+            },
+            "Redmane Knight Ogha Ashes": {
+                "where": "Dropped by Putrid Tree Spirit in the War Dead Catacombs",
+                "url": "https://eldenring.wiki.fextralife.com/Redmane+Knight+Ogha+Ashes"
+            },
+            "Mimic Tear": {
+                "where": "Found in a chest locked behind an imp statue door in Night's Sacred Ground",
+                "url": "https://eldenring.wiki.fextralife.com/Mimic+Tear"
+            },
+            "Ancient Dragon Knight Kristoff Ashes": {
+                "where": "Can be found in Sainted Hero's Grave west of Leyndell, the Royal Capital",
+                "url": "https://eldenring.wiki.fextralife.com/Ancient+Dragon+Knight+Kristoff+Ashes"
+            },
+            "Cleanrot Knight Finlay Ashes": {
+                "where": "Found in a chest protected by a knight in Elphael, Brace of the Haligtree",
+                "url": "https://eldenring.wiki.fextralife.com/Cleanrot+Knight+Finlay+Ashes"
+            }
+        }
+    },
+    "Legendary Sorceries and Incantations": {
+        "how-to-unlock": "Acquired all legendary sorceries and incantations",
+        "type": "legendary-items",
+        "url": null,
+        "sub": {
+            "Flame of the Fell God": {
+                "where": "Dropped by Adan, Thief of Fire upon defeat",
+                "url": "https://eldenring.wiki.fextralife.com/Flame+of+the+Fell+God"
+            },
+            "Greyoll's Roar": {
+                "where": "Can be purchased at the Cathedral of Dragon Communion for a Dragon Heart after defeating Greyoll",
+                "url": "https://eldenring.wiki.fextralife.com/Greyoll's+Roar"
+            },
+            "Elden Stars": {
+                "where": "Can be found near the Great Waterfall Crest Site of Grace",
+                "url": "https://eldenring.wiki.fextralife.com/Elden+Stars"
+            },
+            "Founding Rain of Stars": {
+                "where": "Inside a chest within Heretical Rise, in Mountaintops of the Giants",
+                "url": "https://eldenring.wiki.fextralife.com/Founding+Rain+of+Stars"
+            },
+            "Ranni's Dark Moon": {
+                "where": "Found in a chest at the top of the tower at Chelona's Rise",
+                "url": "https://eldenring.wiki.fextralife.com/Ranni's+Dark+Moon"
+            },
+            "Comet Azur": {
+                "where": " Acquired from Primeval Sorcerer Azur sitting near the cliffs in the northeast of Hermit Village in Mt. Gelmir",
+                "url": "https://eldenring.wiki.fextralife.com/Comet+Azur"
+            },
+            "Stars of Ruin": {
+                "where": "Given by Master Lusat when interacted with inside the Sellia Hideaway in Caelid",
+                "url": "https://eldenring.wiki.fextralife.com/Stars+of+Ruin"
+            }
+        }
+    },
+    "Legendary Talismans": {
+        "how-to-unlock": "Acquired all legendary talismans",
+        "type": "legendary-items",
+        "url": null,
+        "sub": {
+            "Radagon Icon": {
+                "where": "Found inside a treasure chest on the second floor of the Debate Parlor Site of Grace",
+                "url": "https://eldenring.wiki.fextralife.com/Radagon+Icon"
+            },
+            "Radagon's Soreseal": {
+                "where": "Found on a corpse in Fort Faroth",
+                "url": "https://eldenring.wiki.fextralife.com/Radagon's+Soreseal"
+            },
+            "Godfrey Icon": {
+                "where": "Drops from Godefroy the Grafted in the Golden Lineage Evergaol",
+                "url": "https://eldenring.wiki.fextralife.com/Godfrey+Icon"
+            },
+            "Moon of Nokstella": {
+                "where": "Found in a chest underneath a massive throne in Nokstella, Eternal City",
+                "url": "https://eldenring.wiki.fextralife.com/Moon+of+Nokstella"
+            },
+            "Dragoncrest Greatshield Talisman": {
+                "where": "Found in a chest near the Drainage Channel Site of Grace.",
+                "url": "https://eldenring.wiki.fextralife.com/Dragoncrest+Greatshield+Talisman"
+            },
+            "Marika's Soreseal": {
+                "where": "Found on an altar in a room requiring a Stonesword Key in Elphael, Brace of the Haligtree",
+                "url": "https://eldenring.wiki.fextralife.com/Marika's+Soreseal"
+            },
+            "Old Lord's Talisman": {
+                "where": "Found in a chest in Crumbling Farum Azula",
+                "url": "https://eldenring.wiki.fextralife.com/Old+Lord's+Talisman"
+            },
+            "Erdtree's Favor +2": {
+                "where": "Found on a dead tree in Leyndell, Ashen Capital (endgame/post-game)",
+                "url": "https://eldenring.wiki.fextralife.com/Erdtree's+Favor"
+            }
+        }
+    },
+    "Leonine Misbegotten": {
+        "how-to-unlock": "Defeated the Leonine Misbegotten",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Leonine+Misbegotten",
+        "sub": null
+    },
+    "Lichdragon Fortissax": {
+        "how-to-unlock": "Defeated Lichdragon Fortissax",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Lichdragon+Fortissax",
+        "sub": null
+    },
+    "Lord of Frenzied Flame": {
+        "how-to-unlock": "Achieved the \"Lord of the Frenzied Flame\" ending",
+        "type": "ending",
+        "url": "https://eldenring.wiki.fextralife.com/Endings",
+        "sub": null
+    },
+    "Loretta, Knight of the Haligtree": {
+        "how-to-unlock": "Defeated Loretta, Knight of the Haligtree",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Loretta,+Knight+of+the+Haligtree",
+        "sub": null
+    },
+    "Magma Wyrm Makar": {
+        "how-to-unlock": "Defeated Magma Wyrm Makar",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Magma+Wyrm+Makar",
+        "sub": null
+    },
+    "Maliketh, the Black Blade": {
+        "how-to-unlock": "DefeatedShardbearer Maliketh, the Black Blade",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Maliketh,+the+Black+Blade",
+        "sub": null
+    },
+    "Margit, the Fell Omen": {
+        "how-to-unlock": "Defeated Margit, the Fell Omen",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Margit,+the+Fell+Omen",
+        "sub": null
+    },
+    "Mimic Tear": {
+        "how-to-unlock": "Defeated Mimic Tear",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Mimic+Tear",
+        "sub": null
+    },
+    "Mohg, the Omen": {
+        "how-to-unlock": "Defeated Mohg, the Omen",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Mohg,+the+Omen",
+        "sub": null
+    },
+    "Red Wolf of Radagon": {
+        "how-to-unlock": "Defeated the Red Wolf of Radagon",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Red+Wolf+of+Radagon",
+        "sub": null
+    },
+    "Regal Ancestor Spirit": {
+        "how-to-unlock": "Defeated Regal Ancestor Spirit",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Regal+Ancestor+Spirit",
+        "sub": null
+    },
+    "Rennala, Queen of the Full Moon": {
+        "how-to-unlock": "Defeated Rennala, Queen of the Full Moon",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Rennala,+Queen+of+the+Full+Moon",
+        "sub": null
+    },
+    "Roundtable Hold": {
+        "how-to-unlock": "Arrived at Roundtable Hold",
+        "type": "misc",
+        "url": null,
+        "sub": null
+    },
+    "Royal Knight Loretta": {
+        "how-to-unlock": "Defeated Royal Knight Loretta",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Royal+Knight+Loretta",
+        "sub": null
+    },
+    "Shardbearer Godrick": {
+        "how-to-unlock": "Defeated Shardbearer Godrick",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Godrick+the+Grafted",
+        "sub": null
+    },
+    "Shardbearer Melania": {
+        "how-to-unlock": "Defeated Shardbearer Malenia",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Malenia+Blade+of+Miquella",
+        "sub": null
+    },
+    "Shardbearer Mohg": {
+        "how-to-unlock": "Defeated Shardbearer Mohg",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Mohg,+Lord+of+Blood",
+        "sub": null
+    },
+    "Shardbearer Morgott": {
+        "how-to-unlock": "Defeated Shardbearer Morgott",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Morgott+the+Omen+King",
+        "sub": null
+    },
+    "Shardbearer Radahn": {
+        "how-to-unlock": "Defeated Shardbearer Radahn",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Starscourge+Radahn",
+        "sub": null
+    },
+    "Shardbearer Rykard": {
+        "how-to-unlock": "Defeated Shardbearer Rykard",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Rykard,+Lord+of+Blasphemy",
+        "sub": null
+    },
+    "Valiant Gargoyle": {
+        "how-to-unlock": "Defeated Valiant Gargoyle",
+        "type": "boss",
+        "url": "https://eldenring.wiki.fextralife.com/Valiant+Gargoyle",
+        "sub": null
+    }
+}
