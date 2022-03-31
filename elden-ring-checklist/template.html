@@ -105,36 +105,36 @@ a {
 </p>
 
 <ul class="check-list">
-    {% for name, achievement in achievements.items() %}
+    {%- for name, achievement in achievements.items() %}
     <li class="achievement {{ achievement['type'] }}">
         <input type="checkbox" id="{{ name|html_tag }}" class="checkbox">
         <div class="content">
-            {% if achievement['url'] %}
+            {%- if achievement['url'] %}
                 <h3><a href="{{ achievement['url'] }}" target="_blank">{{ name }}</a></h3>
-            {% else %}
+            {%- else %}
                 <h3>{{ name }}</h3>
-            {% endif %}
+            {%- endif %}
             <p>{{ achievement['how-to-unlock'] }}</p>
-            {% if achievement['sub'] %}
+            {%- if achievement['sub'] %}
             <ul class="sublist">
-                {% for sub_name, sub in achievement['sub'].items() %}
+                {%- for sub_name, sub in achievement['sub'].items() %}
                 <li class="sub">
-                    <input type="checkbox" id="{{ sub_name|html_tag }}" class="checkbox">
+                    <input type="checkbox" id="{{ sub_name|html_tag if sub_name not in achievements else sub_name|html_tag + name|html_tag }}" class="checkbox">
                     <div class="content">
-                        {% if sub['url'] %}
+                        {%- if sub['url'] %}
                             <h4><a href="{{ sub['url'] }}" target="_blank">{{ sub_name }}</a></h4>
-                        {% else %}
+                        {%- else %}
                             <h4>{{ sub_name }}</h4>
-                        {% endif %}
+                        {%- endif %}
                         <p>{{ sub['where'] }}</p>
                     </div>
                 </li>
-                {% endfor %}
+                {%- endfor %}
             </ul>
-            {% endif %}
+            {%- endif %}
         </div>
     </li>
-    {% endfor %}
+    {%- endfor %}
 </ul>
 </body>
 
